@@ -1,0 +1,12 @@
+{
+  "short_name": "FitTrack",
+  "name": "FitTrack - Workout & Meal Tracker",
+  "description": "Personal fitness hub for workout planning, body tracking, and meal planning",
+  "start_url": "/workout/",
+  "display": "standalone",
+  "background_color": "#06060a",
+  "theme_color": "#0f172a",
+  "icons": [
+    { "src": "/workout/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

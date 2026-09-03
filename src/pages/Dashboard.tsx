@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Activity, Dumbbell, Droplets, Flame, TrendingUp, Scale, Target, Utensils } from 'lucide-react'
+import { Activity, Dumbbell, Droplets, Flame, TrendingUp, Scale, Target, Utensils, Clock } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 
@@ -8,7 +8,12 @@ interface WorkoutEntry { date: string; sets: number }
 
 export default function Dashboard() {
   const [weightHistory] = useLocalStorage<WeightEntry[]>('fittrack_weights', [])
-  const [workoutHistory] = useLocalStorage<WorkoutEntry[]>('fittrack_workouts', [])
+  const [workoutDays] = useLocalStorage<any[]>('fittrack_workout_days', [])
+  const totalWorkouts = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.completedSets?.length || 0), 0), 0)
+  const totalSets = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.sets || 0), 0), 0)
+  const workoutPct = totalSets > 0 ? Math.round((totalWorkouts / totalSets) * 100) : 0
+  const nextWorkout = workoutDays.find((d: any) => d.exercises.some((e: any) => (e.completedSets?.length || 0) < (e.sets || 0)))
+  const nextWorkoutName = nextWorkout ? (nextWorkout.name.split(' — ')[1] || nextWorkout.name) : 'All done!'
   const [water, setWater] = useLocalStorage('fittrack_water', 0)
   const [macros] = useLocalStorage('fittrack_macros', { calories: 0, protein: 0, carbs: 0, fat: 0 })
   const [macroGoals] = useLocalStorage('fittrack_goals', { calories: 2400, protein: 200, carbs: 280, fat: 75, water: 8 })
@@ -48,10 +53,15 @@ export default function Dashboard() {
         <div className="card">
           <div className="card-header">
             <span className="card-title">Workouts</span>
-            <div className="card-icon" style={{ background: 'rgba(16,185,129,0.15)' }}><Dumbbell size={20} color="#10b981" /></div>
+            <div className="card-icon" style={{ background: 'rgba(16,185,129,0.15)' }}><Activity size={20} color="#10b981" /></div>
           </div>
-          <div className="card-value">--</div>
-          <div className="card-change" style={{ color: '#64748b' }}>Log workouts to track progress</div>
+          <div className="card-value">{workoutPct}<span style={{fontSize:'1rem',color:'#64748b'}}>%</span></div>
+          <div className="progress-bar" style={{ marginTop: 8 }}>
+            <div className="progress-fill" style={{ width: `${workoutPct}%`, background: '#10b981' }}></div>
+          </div>
+          <div className="card-change" style={{ color: '#64748b', marginTop: 4 }}>
+            {totalWorkouts}/{totalSets} sets done · Next: {nextWorkoutName}
+          </div>
         </div>
 
         <div className="card">
@@ -79,6 +89,19 @@ export default function Dashboard() {
           </div>
           <div className="card-change" style={{ color: '#64748b', marginTop: 4 }}>
             {macros.protein === 0 ? 'Add meals to track protein' : `${Math.round((macros.protein / macroGoals.protein) * 100)}% of daily goal`}
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-header">
+            <span className="card-title">Next Up</span>
+            <div className="card-icon" style={{ background: 'rgba(245,158,11,0.15)' }}><Clock size={20} color="#f59e0b" /></div>
+          </div>
+          <div className="card-value" style={{ fontSize: '1.2rem', lineHeight: 1.3 }}>{nextWorkoutName}</div>
+          <div className="card-change" style={{ color: '#64748b' }}>
+            {nextWorkout
+              ? `${nextWorkout.exercises.filter((e: any) => (e.completedSets?.length || 0) < (e.sets || 0)).length} exercises remaining`
+              : 'Rest day or all complete'}
           </div>
         </div>
       </div>
