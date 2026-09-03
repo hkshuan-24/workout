@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Plus, Trash2, Droplets, Flame, Beef, Wheat, Droplet } from 'lucide-react'
+import { Plus, Trash2, Droplets, Flame, Beef, Wheat, Droplet, Utensils } from 'lucide-react'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts'
+import { useLocalStorage } from '../hooks/useLocalStorage'
 
 interface Meal {
   id: string
@@ -12,25 +13,29 @@ interface Meal {
   time: string
 }
 
-const MACRO_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444']
+const MACRO_COLORS = ['#8b5cf6', '#3b82f6', '#ef4444']
+
+const MEAL_TEMPLATES = [
+  { name: 'Protein Oats', calories: 450, protein: 30, carbs: 55, fat: 10, time: 'Breakfast' },
+  { name: 'Chicken Breast + Rice', calories: 600, protein: 50, carbs: 65, fat: 12, time: 'Lunch' },
+  { name: 'Pre-Workout Shake', calories: 250, protein: 25, carbs: 25, fat: 3, time: 'Pre-Workout' },
+  { name: 'Salmon + Quinoa', calories: 550, protein: 40, carbs: 45, fat: 20, time: 'Dinner' },
+  { name: 'Greek Yogurt + Berries', calories: 300, protein: 25, carbs: 35, fat: 5, time: 'Snack' },
+  { name: 'Egg White Omelette', calories: 350, protein: 30, carbs: 10, fat: 18, time: 'Breakfast' },
+]
 
 export default function MealPlanner() {
-  const [meals, setMeals] = useState<Meal[]>([
-    { id: '1', name: 'Oatmeal + Protein Shake', calories: 520, protein: 35, carbs: 65, fat: 10, time: 'Breakfast' },
-    { id: '2', name: 'Chicken Rice Bowl', calories: 650, protein: 45, carbs: 70, fat: 18, time: 'Lunch' },
-    { id: '3', name: 'Pre-Workout Banana + Whey', calories: 280, protein: 25, carbs: 30, fat: 3, time: 'Pre-Workout' },
-    { id: '4', name: 'Post-Workout Steak + Potato', calories: 700, protein: 50, carbs: 60, fat: 22, time: 'Dinner' },
-  ])
-
-  const [water, setWater] = useState(5)
-  const waterGoal = 8
+  const [meals, setMeals] = useLocalStorage<Meal[]>('fittrack_meals', [])
+  const [water, setWater] = useLocalStorage('fittrack_water_meals', 0)
+  const [goals] = useLocalStorage('fittrack_goals', { calories: 2400, protein: 200, carbs: 280, fat: 75, water: 8 })
+  const waterGoal = goals.water
 
   const [showAdd, setShowAdd] = useState(false)
   const [form, setForm] = useState({ name: '', calories: '', protein: '', carbs: '', fat: '', time: 'Breakfast' })
 
   const addMeal = () => {
     if (!form.name || !form.calories) return
-    setMeals([...meals, {
+    setMeals(prev => [...prev, {
       id: Date.now().toString(),
       name: form.name,
       calories: Number(form.calories),
@@ -44,7 +49,7 @@ export default function MealPlanner() {
   }
 
   const deleteMeal = (id: string) => {
-    setMeals(meals.filter(m => m.id !== id))
+    setMeals(prev => prev.filter(m => m.id !== id))
   }
 
   const totals = meals.reduce((a, m) => ({
@@ -53,8 +58,6 @@ export default function MealPlanner() {
     carbs: a.carbs + m.carbs,
     fat: a.fat + m.fat,
   }), { calories: 0, protein: 0, carbs: 0, fat: 0 })
-
-  const goals = { calories: 2400, protein: 200, carbs: 280, fat: 75 }
 
   const pieData = [
     { name: 'Protein', value: totals.protein * 4 },
@@ -72,7 +75,7 @@ export default function MealPlanner() {
       <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))' }}>
         <div className="card">
           <div className="card-header"><span className="card-title">Calories</span><Flame size={18} color="#f59e0b"/></div>
-          <div className="card-value">{totals.calories}<span style={{fontSize:'1rem',color:'#64748b'}}> / {goals.calories}</span></div>
+          <div className="card-value">{totals.calories.toLocaleString()}<span style={{fontSize:'1rem',color:'#64748b'}}> / {goals.calories.toLocaleString()}</span></div>
           <div className="progress-bar" style={{marginTop:8}}>
             <div className="progress-fill" style={{width:`${Math.min((totals.calories/goals.calories)*100,100)}%`,background:'#f59e0b'}}/></div>
         </div>
@@ -99,19 +102,29 @@ export default function MealPlanner() {
       <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))' }}>
         <div className="card" style={{ minHeight: 300 }}>
           <div className="card-header"><span className="card-title">Macro Breakdown</span></div>
-          <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value">
-                {pieData.map((_, i) => <Cell key={i} fill={MACRO_COLORS[i]}/>)}
-              </Pie>
-              <Tooltip contentStyle={{background:'#0f172a',border:'1px solid #334155',borderRadius:8}}/>
-            </PieChart>
-          </ResponsiveContainer>
-          <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8 }}>
-            <span style={{ fontSize: 12, color: '#8b5cf6' }}>● Protein ({Math.round(totals.protein * 4)} kcal)</span>
-            <span style={{ fontSize: 12, color: '#3b82f6' }}>● Carbs ({Math.round(totals.carbs * 4)} kcal)</span>
-            <span style={{ fontSize: 12, color: '#ef4444' }}>● Fat ({Math.round(totals.fat * 9)} kcal)</span>
-          </div>
+          {totals.calories > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={220}>
+                <PieChart>
+                  <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={4} dataKey="value">
+                    {pieData.map((_, i) => <Cell key={i} fill={MACRO_COLORS[i]}/>)}
+                  </Pie>
+                  <Tooltip contentStyle={{background:'#0f172a',border:'1px solid #334155',borderRadius:8}}/>
+                </PieChart>
+              </ResponsiveContainer>
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center', marginTop: 8 }}>
+                <span style={{ fontSize: 12, color: '#8b5cf6' }}>● Protein ({Math.round(totals.protein * 4)} kcal)</span>
+                <span style={{ fontSize: 12, color: '#3b82f6' }}>● Carbs ({Math.round(totals.carbs * 4)} kcal)</span>
+                <span style={{ fontSize: 12, color: '#ef4444' }}>● Fat ({Math.round(totals.fat * 9)} kcal)</span>
+              </div>
+            </>
+          ) : (
+            <div className="empty-state" style={{height:220}}>
+              <Flame size={32} color="#334155" />
+              <span>No meals logged yet</span>
+              <span style={{fontSize:'0.8rem'}}>Add your first meal to see macro breakdown</span>
+            </div>
+          )}
         </div>
 
         <div className="card">
@@ -119,11 +132,7 @@ export default function MealPlanner() {
           <div className="card-value">{water}<span style={{fontSize:'1rem',color:'#64748b'}}> / {waterGoal} glasses</span></div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 14 }}>
             {Array.from({length:waterGoal+4}).map((_,i) => (
-              <button key={i} onClick={() => setWater(i+1)} style={{
-                width:36,height:36,borderRadius:8,border:'none',cursor:'pointer',
-                background: i < water ? '#06b6d4' : '#1e293b',
-                transition:'all 0.2s'
-              }}/>
+              <button key={i} onClick={() => setWater(i+1)} className="water-glass" data-active={i < water} />
             ))}
           </div>
           <button onClick={() => setWater(Math.min(water+1,12))} className="btn btn-primary" style={{marginTop:14,width:'100%',justifyContent:'center'}}>
@@ -140,55 +149,56 @@ export default function MealPlanner() {
 
       <div className="section">
         <h2>Today's Meals</h2>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Meal</th>
-              <th>Calories</th>
-              <th>Protein</th>
-              <th>Carbs</th>
-              <th>Fat</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {meals.map(meal => (
-              <tr key={meal.id}>
-                <td><span className="tag tag-blue">{meal.time}</span></td>
-                <td style={{ fontWeight: 600 }}>{meal.name}</td>
-                <td>{meal.calories}</td>
-                <td>{meal.protein}g</td>
-                <td>{meal.carbs}g</td>
-                <td>{meal.fat}g</td>
-                <td>
-                  <button onClick={() => deleteMeal(meal.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
-                    <Trash2 size={16}/>
-                  </button>
-                </td>
+        {meals.length === 0 ? (
+          <div className="empty-state">
+            <Utensils size={32} color="#334155" />
+            <span>No meals recorded</span>
+            <span style={{fontSize:'0.8rem'}}>Click "Add Meal" or use a template below</span>
+          </div>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Meal</th>
+                <th>Calories</th>
+                <th>Protein</th>
+                <th>Carbs</th>
+                <th>Fat</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {meals.map(meal => (
+                <tr key={meal.id}>
+                  <td><span className="tag tag-blue">{meal.time}</span></td>
+                  <td style={{ fontWeight: 600 }}>{meal.name}</td>
+                  <td>{meal.calories}</td>
+                  <td>{meal.protein}g</td>
+                  <td>{meal.carbs}g</td>
+                  <td>{meal.fat}g</td>
+                  <td>
+                    <button onClick={() => deleteMeal(meal.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                      <Trash2 size={16}/>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
       <div className="section">
         <h2>Quick Meal Templates</h2>
         <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))' }}>
-          {[
-            { name: 'Protein Oats', cal: 450, p: 30, c: 55, f: 10, time: 'Breakfast' },
-            { name: 'Chicken Breast + Rice', cal: 600, p: 50, c: 65, f: 12, time: 'Lunch' },
-            { name: 'Pre-Workout Shake', cal: 250, p: 25, c: 25, f: 3, time: 'Pre-Workout' },
-            { name: 'Salmon + Quinoa', cal: 550, p: 40, c: 45, f: 20, time: 'Dinner' },
-            { name: 'Greek Yogurt + Berries', cal: 300, p: 25, c: 35, f: 5, time: 'Snack' },
-            { name: 'Egg White Omelette', cal: 350, p: 30, c: 10, f: 18, time: 'Breakfast' },
-          ].map((tmpl, i) => (
+          {MEAL_TEMPLATES.map((tmpl, i) => (
             <div key={i} className="card" style={{ padding: 16, cursor: 'pointer' }} onClick={() => {
-              setForm({ name: tmpl.name, calories: String(tmpl.cal), protein: String(tmpl.p), carbs: String(tmpl.c), fat: String(tmpl.f), time: tmpl.time })
+              setForm({ name: tmpl.name, calories: String(tmpl.calories), protein: String(tmpl.protein), carbs: String(tmpl.carbs), fat: String(tmpl.fat), time: tmpl.time })
               setShowAdd(true)
             }}>
               <div style={{ fontWeight: 700, marginBottom: 6 }}>{tmpl.name}</div>
-              <div style={{ fontSize: 13, color: '#94a3b8' }}>{tmpl.cal} kcal · {tmpl.p}g protein · {tmpl.c}g carbs · {tmpl.f}g fat</div>
+              <div style={{ fontSize: 13, color: '#94a3b8' }}>{tmpl.calories} kcal · {tmpl.protein}g protein · {tmpl.carbs}g carbs · {tmpl.fat}g fat</div>
               <span className="tag tag-green" style={{ marginTop: 8 }}>{tmpl.time}</span>
             </div>
           ))}

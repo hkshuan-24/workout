@@ -1,47 +1,78 @@
+import { Suspense, lazy } from 'react'
 import { HashRouter, Routes, Route, NavLink } from 'react-router-dom'
-import { Dumbbell, Scale, Utensils, Activity } from 'lucide-react'
-import Dashboard from './pages/Dashboard'
-import WorkoutPlanner from './pages/WorkoutPlanner'
-import BodyTracker from './pages/BodyTracker'
-import MealPlanner from './pages/MealPlanner'
+import { Dumbbell, Scale, Utensils, Activity, Menu, X, Settings } from 'lucide-react'
+import { useState } from 'react'
+import { useLocalStorage } from './hooks/useLocalStorage'
+import Welcome from './pages/Welcome'
 import './index.css'
 
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const WorkoutPlanner = lazy(() => import('./pages/WorkoutPlanner'))
+const BodyTracker = lazy(() => import('./pages/BodyTracker'))
+const MealPlanner = lazy(() => import('./pages/MealPlanner'))
+const SettingsPage = lazy(() => import('./pages/Settings'))
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  return (
+    <div className="app">
+      <button className="mobile-menu-btn" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+      </button>
+      <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div className="logo">
+          <Activity size={28} />
+          <span>FitTrack</span>
+        </div>
+        <div className="nav-links">
+          <NavLink to="/" end onClick={() => setSidebarOpen(false)}>
+            <Activity size={18} /> Dashboard
+          </NavLink>
+          <NavLink to="/workouts" onClick={() => setSidebarOpen(false)}>
+            <Dumbbell size={18} /> Workouts
+          </NavLink>
+          <NavLink to="/body" onClick={() => setSidebarOpen(false)}>
+            <Scale size={18} /> Body
+          </NavLink>
+          <NavLink to="/meals" onClick={() => setSidebarOpen(false)}>
+            <Utensils size={18} /> Meals
+          </NavLink>
+          <NavLink to="/settings" onClick={() => setSidebarOpen(false)}>
+            <Settings size={18} /> Settings
+          </NavLink>
+        </div>
+        <div className="nav-footer">
+          <small>Your Personal Fitness Hub</small>
+        </div>
+      </nav>
+      {sidebarOpen && <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />}
+      <main className="main-content">
+        {children}
+      </main>
+    </div>
+  )
+}
+
 function App() {
+  const [onboarded, setOnboarded] = useLocalStorage('fittrack_onboarded', false)
+
+  if (!onboarded) {
+    return <Welcome onComplete={() => setOnboarded(true)} />
+  }
+
   return (
     <HashRouter>
-      <div className="app">
-        <nav className="sidebar">
-          <div className="logo">
-            <Activity size={28} />
-            <span>FitTrack</span>
-          </div>
-          <div className="nav-links">
-            <NavLink to="/" end>
-              <Activity size={18} /> Dashboard
-            </NavLink>
-            <NavLink to="/workouts">
-              <Dumbbell size={18} /> Workouts
-            </NavLink>
-            <NavLink to="/body">
-              <Scale size={18} /> Body
-            </NavLink>
-            <NavLink to="/meals">
-              <Utensils size={18} /> Meals
-            </NavLink>
-          </div>
-          <div className="nav-footer">
-            <small>Your Personal Fitness Hub</small>
-          </div>
-        </nav>
-        <main className="main-content">
+      <AppLayout>
+        <Suspense fallback={<div className="loading-screen"><div className="spinner" /></div>}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/workouts" element={<WorkoutPlanner />} />
             <Route path="/body" element={<BodyTracker />} />
             <Route path="/meals" element={<MealPlanner />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Routes>
-        </main>
-      </div>
+        </Suspense>
+      </AppLayout>
     </HashRouter>
   )
 }
