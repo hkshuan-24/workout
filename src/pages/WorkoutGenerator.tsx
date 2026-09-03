@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { Sparkles, Dumbbell, Save, Check, ChevronDown, ChevronUp, ArrowRight, RotateCcw, Target, Zap, Flame, Shield, Wind, Heart, BicepsFlexed } from 'lucide-react'
+import {
+  Sparkles, Dumbbell, Save, Check, ChevronDown, ChevronUp, ArrowRight, RotateCcw,
+  Target, Zap, Flame, Shield, Wind, Heart, BicepsFlexed, Clock, Calendar, TrendingUp,
+  Activity, BarChart3, ChevronRight, Award
+} from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 
 interface Exercise {
@@ -18,14 +22,35 @@ interface WorkoutDay {
   exercises: Exercise[]
 }
 
+interface Phase {
+  name: string
+  weeks: string
+  focus: string
+  volumeRule: string
+  intensityRule: string
+  progression: string
+}
+
+interface ExpectedResult {
+  metric: string
+  value: string
+  timeframe: string
+}
+
 interface WorkoutPlan {
   id: string
   name: string
   description: string
   icon: React.ReactNode
   tags: string[]
+  durationWeeks: number
+  frequencyDays: number
+  phases: Phase[]
+  expectedResults: ExpectedResult[]
   days: WorkoutDay[]
 }
+
+/* ─── PRESETS ─── */
 
 const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
   {
@@ -33,6 +58,19 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
     description: 'Wide lats, narrow waist, cannonball delts and sleeve-busting arms. Heavy pull emphasis with arm specialization.',
     icon: <Zap size={24} color="#f59e0b" />,
     tags: ['Back', 'Arms', 'Aesthetics'],
+    durationWeeks: 12,
+    frequencyDays: 5,
+    phases: [
+      { name: 'Foundation', weeks: 'Weeks 1-4', focus: 'Form & mind-muscle connection', volumeRule: '3-4 sets per exercise', intensityRule: 'RPE 7-8, leave 2-3 reps in reserve', progression: 'Add 2.5-5 lbs when you can complete all sets cleanly' },
+      { name: 'Build', weeks: 'Weeks 5-8', focus: 'Volume & width accumulation', volumeRule: '4-5 sets per exercise, add 1 set to back movements', intensityRule: 'RPE 8-9, 1-2 reps in reserve', progression: 'Increase weight 5-10% every 2 weeks on compounds' },
+      { name: 'Peak', weeks: 'Weeks 9-12', focus: 'Max density & arm detail', volumeRule: '5 sets + drop sets on arms & delts', intensityRule: 'RPE 9-10, occasional failure on last set', progression: 'Drop sets, rest-pause on arms; test weighted pull-up max' },
+    ],
+    expectedResults: [
+      { metric: 'Lat Spread', value: '+2-3 inches', timeframe: '10-12 weeks' },
+      { metric: 'Arm Circumference', value: '+0.5-1 inch', timeframe: '10-12 weeks' },
+      { metric: 'Waist Definition', value: 'Visible abs outline', timeframe: '8-10 weeks' },
+      { metric: 'Shoulder Width', value: '3D capped look', timeframe: '10-12 weeks' },
+    ],
     days: [
       {
         id: 'd1', name: 'Day 1 — Width & Back',
@@ -89,6 +127,19 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
     description: 'Maximum mass building. Heavy compounds, high volume, progressive overload. For the thick, dense look.',
     icon: <Flame size={24} color="#ef4444" />,
     tags: ['Mass', 'Strength', 'Size'],
+    durationWeeks: 16,
+    frequencyDays: 5,
+    phases: [
+      { name: 'Foundation', weeks: 'Weeks 1-4', focus: 'Build the base, master compounds', volumeRule: '4 sets per exercise', intensityRule: 'RPE 7, controlled tempo 3-1-2', progression: 'Add weight only when form is perfect' },
+      { name: 'Build', weeks: 'Weeks 5-10', focus: 'Aggressive overload & volume', volumeRule: '4-5 sets, add 1 set to compounds weekly', intensityRule: 'RPE 8-9, push close to failure', progression: 'Add 5-10 lbs to bench/squat/deadlift every 2-3 weeks' },
+      { name: 'Peak', weeks: 'Weeks 11-16', focus: 'Maximal size & density', volumeRule: '5 sets + 1 backoff set on compounds', intensityRule: 'RPE 9, occasional forced reps on accessories', progression: 'Cluster sets on bench/squat; test 5RM every 4 weeks' },
+    ],
+    expectedResults: [
+      { metric: 'Body Weight', value: '+6-10 lbs', timeframe: '12-16 weeks' },
+      { metric: 'Bench Press', value: '+20-35 lbs', timeframe: '12-16 weeks' },
+      { metric: 'Squat', value: '+30-50 lbs', timeframe: '12-16 weeks' },
+      { metric: 'Chest/Back Thickness', value: 'Visibly denser', timeframe: '10-12 weeks' },
+    ],
     days: [
       {
         id: 'd1', name: 'Day 1 — Push (Chest + Delts + Tris)',
@@ -148,6 +199,19 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
     description: 'Functional strength, explosive power, and a shredded physique. Athletic performance meets aesthetics.',
     icon: <Wind size={24} color="#10b981" />,
     tags: ['Athletic', 'Functional', 'Lean'],
+    durationWeeks: 10,
+    frequencyDays: 4,
+    phases: [
+      { name: 'Foundation', weeks: 'Weeks 1-3', focus: 'Movement quality & conditioning base', volumeRule: '3-4 sets, moderate reps', intensityRule: 'RPE 7, focus on speed & control', progression: 'Master movement patterns before adding load' },
+      { name: 'Build', weeks: 'Weeks 4-7', focus: 'Power development & metabolic stress', volumeRule: '4 sets + conditioning finisher (10 min)', intensityRule: 'RPE 8, explosive concentrics', progression: 'Add 5% weight weekly; reduce rest 10s every 2 weeks' },
+      { name: 'Peak', weeks: 'Weeks 8-10', focus: 'Conditioning peak & definition', volumeRule: '4 sets + HIIT or complexes (15 min)', intensityRule: 'RPE 8-9, supersets on accessories', progression: 'Circuit training on Day 4; test body fat %' },
+    ],
+    expectedResults: [
+      { metric: 'Body Fat', value: '-3-5%', timeframe: '8-10 weeks' },
+      { metric: 'Muscle Definition', value: 'Visible separation', timeframe: '8-10 weeks' },
+      { metric: 'Explosive Power', value: '+15-25% jump/throw', timeframe: '8-10 weeks' },
+      { metric: 'Work Capacity', value: 'Shorter rest, same output', timeframe: '6-8 weeks' },
+    ],
     days: [
       {
         id: 'd1', name: 'Day 1 — Power & Push',
@@ -196,6 +260,19 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
     description: 'Pure strength focus. Low reps, heavy weight, long rests. Build a foundation of raw power.',
     icon: <Shield size={24} color="#8b5cf6" />,
     tags: ['Strength', 'Power', 'Compounds'],
+    durationWeeks: 12,
+    frequencyDays: 4,
+    phases: [
+      { name: 'Foundation', weeks: 'Weeks 1-4', focus: 'Technique & neural adaptation', volumeRule: '3-4 sets, 5 reps', intensityRule: 'RPE 7, pause reps on squats & bench', progression: 'Add 2.5-5 lbs weekly on all main lifts' },
+      { name: 'Build', weeks: 'Weeks 5-8', focus: 'Strength accumulation', volumeRule: '4-5 sets, 3-5 reps', intensityRule: 'RPE 8-8.5, heavy doubles & triples', progression: 'Wave loading: 5-3-1 pattern over 3 weeks' },
+      { name: 'Peak', weeks: 'Weeks 9-12', focus: 'Maximal strength testing', volumeRule: '3-5 sets, 1-3 reps', intensityRule: 'RPE 9+, test singles', progression: 'Test 1RM on squat, bench, deadlift in final week' },
+    ],
+    expectedResults: [
+      { metric: 'Squat 1RM', value: '+30-50 lbs', timeframe: '12 weeks' },
+      { metric: 'Bench 1RM', value: '+20-35 lbs', timeframe: '12 weeks' },
+      { metric: 'Deadlift 1RM', value: '+40-60 lbs', timeframe: '12 weeks' },
+      { metric: 'Overhead Press', value: '+15-25 lbs', timeframe: '12 weeks' },
+    ],
     days: [
       {
         id: 'd1', name: 'Day 1 — Squat & Lower',
@@ -240,6 +317,19 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
     description: 'Biceps and triceps take center stage. High frequency, high volume, pump-focused arm training.',
     icon: <BicepsFlexed size={24} color="#3b82f6" />,
     tags: ['Arms', 'Aesthetics', 'Pump'],
+    durationWeeks: 10,
+    frequencyDays: 4,
+    phases: [
+      { name: 'Foundation', weeks: 'Weeks 1-3', focus: 'Form & connection', volumeRule: '4 sets per arm exercise', intensityRule: 'RPE 7-8, 2s squeeze at contraction', progression: 'Add 2.5 lbs when all sets completed cleanly' },
+      { name: 'Build', weeks: 'Weeks 4-7', focus: 'Volume & frequency ramp', volumeRule: '4-5 sets + arm superset finisher', intensityRule: 'RPE 8-9, controlled negatives 3s', progression: 'Increase weight 5% every 2 weeks; add 1 set to curls' },
+      { name: 'Peak', weeks: 'Weeks 8-10', focus: 'Peak contraction & blood flow', volumeRule: '5 sets + drop sets + rest-pause', intensityRule: 'RPE 9, failure on last set', progression: '21s method on curls; test arm measurement weekly' },
+    ],
+    expectedResults: [
+      { metric: 'Bicep Peak', value: 'More defined peak', timeframe: '8-10 weeks' },
+      { metric: 'Tricep Horseshoe', value: 'Visible lateral head', timeframe: '8-10 weeks' },
+      { metric: 'Arm Circumference', value: '+0.5-1 inch', timeframe: '8-10 weeks' },
+      { metric: 'Vascularity', value: 'Forearm veins visible', timeframe: '6-8 weeks' },
+    ],
     days: [
       {
         id: 'd1', name: 'Day 1 — Biceps Focus',
@@ -286,6 +376,19 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
     description: 'Build a commanding upper body. Chest, shoulders, and arms dominate this aesthetic-focused plan.',
     icon: <Heart size={24} color="#ec4899" />,
     tags: ['Chest', 'Upper Body', 'Aesthetics'],
+    durationWeeks: 10,
+    frequencyDays: 4,
+    phases: [
+      { name: 'Foundation', weeks: 'Weeks 1-3', focus: 'Chest activation & range of motion', volumeRule: '4 sets, moderate weight', intensityRule: 'RPE 7, deep stretch on every rep', progression: 'Add 5 lbs when form is locked in' },
+      { name: 'Build', weeks: 'Weeks 4-7', focus: 'Upper chest & shoulder width', volumeRule: '4-5 sets, add incline volume', intensityRule: 'RPE 8-9, squeeze hard at top', progression: 'Increase incline press 10% every 2 weeks' },
+      { name: 'Peak', weeks: 'Weeks 8-10', focus: 'Detail, separation & vascularity', volumeRule: '5 sets + supersets (fly + press)', intensityRule: 'RPE 9, partials on last set', progression: 'Test max reps on weighted dips; measure chest' },
+    ],
+    expectedResults: [
+      { metric: 'Chest Measurement', value: '+1-2 inches', timeframe: '8-10 weeks' },
+      { metric: 'Upper Chest', value: 'Full, rounded look', timeframe: '8-10 weeks' },
+      { metric: 'Shoulder Width', value: 'Broader frame', timeframe: '8-10 weeks' },
+      { metric: 'Chest Vascularity', value: 'Striations visible', timeframe: '10+ weeks (low body fat)' },
+    ],
     days: [
       {
         id: 'd1', name: 'Day 1 — Chest Mass',
@@ -348,11 +451,19 @@ function matchGoals(input: string): number[] {
   return Array.from(matches)
 }
 
+/* ─── PHASE COLOURS ─── */
+const PHASE_COLORS = [
+  { border: '#3b82f6', bg: 'rgba(59,130,246,0.08)', dot: '#3b82f6' },
+  { border: '#10b981', bg: 'rgba(16,185,129,0.08)', dot: '#10b981' },
+  { border: '#f59e0b', bg: 'rgba(245,158,11,0.08)', dot: '#f59e0b' },
+]
+
 export default function WorkoutGenerator() {
   const [query, setQuery] = useState('')
   const [matched, setMatched] = useState<number[]>([])
   const [selectedPlan, setSelectedPlan] = useState<WorkoutPlan | null>(null)
   const [expandedDay, setExpandedDay] = useState<string | null>(null)
+  const [expandedPhase, setExpandedPhase] = useState<number | null>(null)
   const [, setSavedDays] = useLocalStorage<WorkoutDay[]>('fittrack_workout_days', [])
   const [saved, setSaved] = useState(false)
 
@@ -379,6 +490,7 @@ export default function WorkoutGenerator() {
     }
     setSelectedPlan(plan)
     setExpandedDay(plan.days[0]?.id || null)
+    setExpandedPhase(null)
     setSaved(false)
   }
 
@@ -395,10 +507,10 @@ export default function WorkoutGenerator() {
     <div>
       <div className="page-header">
         <h1><Sparkles size={28} style={{ display: 'inline', verticalAlign: '-4px', marginRight: 8 }} /> Workout Generator</h1>
-        <p>Describe your goal and get a curated training plan instantly</p>
+        <p>Describe your goal and get a phased, time-bound training plan</p>
       </div>
 
-      {/* Search Box */}
+      {/* Search */}
       <div className="section" style={{ padding: 28 }}>
         <div style={{ display: 'flex', gap: 12, alignItems: 'stretch' }}>
           <input
@@ -406,7 +518,7 @@ export default function WorkoutGenerator() {
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSearch()}
-            placeholder="e.g. 'V-taper with big arms' or 'bulky mass builder'"
+            placeholder="e.g. 'V-taper with big arms' or 'bulky mass in 12 weeks'"
             style={{
               flex: 1,
               padding: '14px 20px',
@@ -438,7 +550,7 @@ export default function WorkoutGenerator() {
         </div>
       </div>
 
-      {/* Results */}
+      {/* Results Grid */}
       {matched.length > 0 && !selectedPlan && (
         <>
           <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16, color: '#f1f5f9' }}>
@@ -448,7 +560,7 @@ export default function WorkoutGenerator() {
             {matched.map(i => {
               const p = PRESETS[i]
               return (
-                <div key={i} className="card" style={{ cursor: 'pointer', position: 'relative' }} onClick={() => selectPlan(p)}>
+                <div key={i} className="card" style={{ cursor: 'pointer' }} onClick={() => selectPlan(p)}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
                     <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       {p.icon}
@@ -460,12 +572,13 @@ export default function WorkoutGenerator() {
                       </div>
                     </div>
                   </div>
-                  <p style={{ color: '#94a3b8', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: 16 }}>{p.description}</p>
-                  <div style={{ display: 'flex', gap: 16, fontSize: '0.85rem', color: '#64748b' }}>
+                  <p style={{ color: '#94a3b8', fontSize: '0.88rem', lineHeight: 1.5, marginBottom: 14 }}>{p.description}</p>
+                  <div style={{ display: 'flex', gap: 16, fontSize: '0.85rem', color: '#64748b', marginBottom: 14 }}>
+                    <span><Clock size={14} style={{ verticalAlign: '-2px', marginRight: 4 }} />{p.durationWeeks} weeks</span>
+                    <span><Calendar size={14} style={{ verticalAlign: '-2px', marginRight: 4 }} />{p.frequencyDays} days/week</span>
                     <span><Dumbbell size={14} style={{ verticalAlign: '-2px', marginRight: 4 }} />{p.days.length} days</span>
-                    <span><Target size={14} style={{ verticalAlign: '-2px', marginRight: 4 }} />{p.days.reduce((a, d) => a + d.exercises.length, 0)} exercises</span>
                   </div>
-                  <div style={{ marginTop: 14, textAlign: 'right' }}>
+                  <div style={{ textAlign: 'right' }}>
                     <span style={{ color: '#3b82f6', fontWeight: 600, fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
                       View Plan <ArrowRight size={16} />
                     </span>
@@ -477,9 +590,10 @@ export default function WorkoutGenerator() {
         </>
       )}
 
-      {/* Selected Plan Detail */}
+      {/* Selected Plan */}
       {selectedPlan && (
         <>
+          {/* Header */}
           <div className="section" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
               <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -500,25 +614,122 @@ export default function WorkoutGenerator() {
             </div>
           </div>
 
-          <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
+          {/* Stats */}
+          <div className="card-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))' }}>
             <div className="card">
-              <div className="card-header"><span className="card-title">Training Days</span><Dumbbell size={18} color="#3b82f6"/></div>
-              <div className="card-value">{selectedPlan.days.length}</div>
+              <div className="card-header"><span className="card-title">Duration</span><Clock size={18} color="#3b82f6"/></div>
+              <div className="card-value">{selectedPlan.durationWeeks}<span style={{fontSize:'1rem',color:'#64748b'}}>w</span></div>
             </div>
             <div className="card">
-              <div className="card-header"><span className="card-title">Exercises</span><Target size={18} color="#10b981"/></div>
+              <div className="card-header"><span className="card-title">Frequency</span><Calendar size={18} color="#10b981"/></div>
+              <div className="card-value">{selectedPlan.frequencyDays}<span style={{fontSize:'1rem',color:'#64748b'}}>/wk</span></div>
+            </div>
+            <div className="card">
+              <div className="card-header"><span className="card-title">Exercises</span><Target size={18} color="#f59e0b"/></div>
               <div className="card-value">{totalExercises}</div>
             </div>
             <div className="card">
-              <div className="card-header"><span className="card-title">Weekly Sets</span><Zap size={18} color="#f59e0b"/></div>
+              <div className="card-header"><span className="card-title">Sets/Week</span><Zap size={18} color="#8b5cf6"/></div>
               <div className="card-value">{totalSets}</div>
-            </div>
-            <div className="card">
-              <div className="card-header"><span className="card-title">Focus</span><Sparkles size={18} color="#8b5cf6"/></div>
-              <div className="card-value" style={{ fontSize: '1.1rem' }}>{selectedPlan.tags.join(', ')}</div>
             </div>
           </div>
 
+          {/* Timeline */}
+          <div className="section">
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 20, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <BarChart3 size={20} /> Training Timeline
+            </h2>
+            <div style={{ display: 'flex', gap: 0, position: 'relative' }}>
+              {/* Connecting line */}
+              <div style={{ position: 'absolute', top: 20, left: '10%', right: '10%', height: 2, background: '#1e293b', zIndex: 0 }} />
+              {selectedPlan.phases.map((phase, idx) => {
+                const c = PHASE_COLORS[idx]
+                const isOpen = expandedPhase === idx
+                return (
+                  <div key={idx} style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+                    <div
+                      onClick={() => setExpandedPhase(isOpen ? null : idx)}
+                      style={{
+                        cursor: 'pointer',
+                        textAlign: 'center',
+                        padding: '0 8px',
+                      }}
+                    >
+                      <div style={{
+                        width: 40, height: 40, borderRadius: '50%',
+                        background: c.bg,
+                        border: `2px solid ${c.border}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 10px',
+                        fontWeight: 800, color: c.dot, fontSize: '0.85rem',
+                      }}>
+                        {idx + 1}
+                      </div>
+                      <div style={{ fontWeight: 700, color: '#f1f5f9', fontSize: '0.9rem' }}>{phase.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2 }}>{phase.weeks}</div>
+                    </div>
+                    {isOpen && (
+                      <div style={{
+                        marginTop: 14,
+                        padding: 16,
+                        background: 'rgba(15,23,42,0.5)',
+                        border: `1px solid ${c.border}`,
+                        borderRadius: 12,
+                        textAlign: 'left',
+                      }}>
+                        <div style={{ marginBottom: 10 }}>
+                          <span style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>Focus</span>
+                          <div style={{ color: '#f1f5f9', fontWeight: 600, marginTop: 2 }}>{phase.focus}</div>
+                        </div>
+                        <div style={{ marginBottom: 10 }}>
+                          <span style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>Volume</span>
+                          <div style={{ color: '#e2e8f0', marginTop: 2 }}>{phase.volumeRule}</div>
+                        </div>
+                        <div style={{ marginBottom: 10 }}>
+                          <span style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>Intensity</span>
+                          <div style={{ color: '#e2e8f0', marginTop: 2 }}>{phase.intensityRule}</div>
+                        </div>
+                        <div>
+                          <span style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>Progression</span>
+                          <div style={{ color: '#e2e8f0', marginTop: 2 }}>{phase.progression}</div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+            <p style={{ color: '#64748b', fontSize: '0.8rem', marginTop: 12, textAlign: 'center' }}>Click a phase to see detailed progression rules</p>
+          </div>
+
+          {/* Expected Results */}
+          <div className="section">
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 20, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Award size={20} color="#f59e0b" /> Expected Results
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 14 }}>
+              {selectedPlan.expectedResults.map((r, i) => (
+                <div key={i} style={{
+                  background: 'rgba(15,23,42,0.5)',
+                  border: '1px solid #1e293b',
+                  borderRadius: 12,
+                  padding: 18,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    <TrendingUp size={16} color="#10b981" />
+                    <span style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>{r.metric}</span>
+                  </div>
+                  <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#f1f5f9', marginBottom: 4 }}>{r.value}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748b' }}><Clock size={12} style={{ verticalAlign: '-1px', marginRight: 4 }} />{r.timeframe}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Workout Days */}
+          <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Activity size={20} /> Workout Schedule
+          </h2>
           {selectedPlan.days.map(day => (
             <div key={day.id} className="section" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
               <div
