@@ -8,11 +8,11 @@ interface WorkoutEntry { date: string; sets: number }
 
 export default function Dashboard() {
   const [weightHistory] = useLocalStorage<WeightEntry[]>('fittrack_weights', [])
-  const [workoutDays] = useLocalStorage<any[]>('fittrack_workout_days', [])
-  const totalWorkouts = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.completedSets?.length || 0), 0), 0)
+  const [workoutDays] = useLocalStorage<any[]>('fittrack_workout_days_v2', [])
+  const totalWorkouts = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.setLogs?.filter((s: any) => s.completed).length || 0), 0), 0)
   const totalSets = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.sets || 0), 0), 0)
   const workoutPct = totalSets > 0 ? Math.round((totalWorkouts / totalSets) * 100) : 0
-  const nextWorkout = workoutDays.find((d: any) => d.exercises.some((e: any) => (e.completedSets?.length || 0) < (e.sets || 0)))
+  const nextWorkout = workoutDays.find((d: any) => d.exercises.some((e: any) => (e.setLogs?.filter((s: any) => s.completed).length || 0) < (e.sets || 0)))
   const nextWorkoutName = nextWorkout ? (nextWorkout.name.split(' — ')[1] || nextWorkout.name) : 'All done!'
   const [water, setWater] = useLocalStorage('fittrack_water', 0)
   const [macros] = useLocalStorage('fittrack_macros', { calories: 0, protein: 0, carbs: 0, fat: 0 })
@@ -100,8 +100,8 @@ export default function Dashboard() {
           <div className="card-value" style={{ fontSize: '1.2rem', lineHeight: 1.3 }}>{nextWorkoutName}</div>
           <div className="card-change" style={{ color: '#64748b' }}>
             {nextWorkout
-              ? `${nextWorkout.exercises.filter((e: any) => (e.completedSets?.length || 0) < (e.sets || 0)).length} exercises remaining`
-              : 'Rest day or all complete'}
+              ? `${nextWorkout.exercises.filter((e: any) => (e.setLogs?.filter((s: any) => s.completed).length || 0) < (e.sets || 0)).length} exercises remaining`
+              : 'Rest day or all complete'
           </div>
         </div>
       </div>
