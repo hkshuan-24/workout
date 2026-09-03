@@ -116,6 +116,7 @@ body {
   margin-left: 240px;
   padding: 30px;
   max-width: calc(100vw - 240px);
+  overflow-x: hidden;
 }
 
 .page-header {
@@ -146,6 +147,7 @@ body {
   border-radius: 14px;
   padding: 22px;
   transition: all 0.2s;
+  overflow-wrap: break-word;
 }
 .card:hover {
   border-color: #334155;
@@ -224,6 +226,7 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 .btn-primary {
   background: linear-gradient(90deg, #3b82f6, #2563eb);
@@ -270,7 +273,7 @@ body {
   border-color: #3b82f6;
 }
 
-/* Tables */
+/* Tables - desktop */
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -292,6 +295,60 @@ body {
 }
 .data-table tr:hover td {
   background: rgba(30, 41, 59, 0.3);
+}
+
+/* Mobile exercise cards (replacing tables on small screens) */
+.exercise-card {
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.exercise-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.exercise-card-name {
+  font-weight: 600;
+  color: #f1f5f9;
+  font-size: 0.95rem;
+}
+.exercise-card-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.exercise-card-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+.exercise-card-sets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Mobile set log chips */
+.set-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #1e293b;
+  border: 1px solid #334155;
+  font-size: 0.85rem;
+}
+.set-chip.completed {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: #10b981;
 }
 
 /* Progress bars */
@@ -345,13 +402,14 @@ body {
   align-items: center;
   justify-content: center;
   z-index: 200;
+  padding: 16px;
 }
 .modal {
   background: #0f172a;
   border: 1px solid #334155;
   border-radius: 16px;
   padding: 28px;
-  width: 90%;
+  width: 100%;
   max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
@@ -387,6 +445,10 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Hide mobile-only elements on desktop */
+.mobile-only { display: none; }
+.desktop-only { display: block; }
+
 /* Responsive */
 @media (max-width: 768px) {
   .mobile-menu-btn {
@@ -404,10 +466,96 @@ body {
   .main-content {
     margin-left: 0;
     max-width: 100%;
-    padding: 70px 16px 16px;
+    padding: 70px 12px 16px;
   }
   .card-grid {
     grid-template-columns: 1fr;
+  }
+
+  /* Typography scale down */
+  .page-header h1 {
+    font-size: 1.4rem;
+  }
+  .page-header p {
+    font-size: 0.85rem;
+  }
+  .card-value {
+    font-size: 1.6rem;
+  }
+
+  /* Tables become scrollable on mobile */
+  .data-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .data-table thead,
+  .data-table tbody,
+  .data-table th,
+  .data-table td,
+  .data-table tr {
+    white-space: nowrap;
+  }
+
+  /* Mobile exercise cards */
+  .mobile-only { display: block; }
+  .desktop-only { display: none; }
+
+  /* Modal full width on mobile */
+  .modal {
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  /* Smaller buttons on mobile */
+  .btn {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+
+  /* Section padding reduction */
+  .section {
+    padding: 16px;
+  }
+
+  /* Day header on mobile */
+  .day-header {
+    padding: 12px 14px !important;
+  }
+  .day-header span {
+    font-size: 0.85rem !important;
+  }
+
+  /* Timeline phases stack */
+  .phase-timeline {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+  .phase-timeline > div {
+    width: 100%;
+  }
+
+  /* Set inputs smaller on mobile */
+  .set-chip input {
+    width: 44px !important;
+    font-size: 11px !important;
+    padding: 3px 4px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 70px 10px 12px;
+  }
+  .card-grid {
+    gap: 12px;
+  }
+  .card {
+    padding: 16px;
+  }
+  .page-header h1 {
+    font-size: 1.25rem;
   }
 }
 

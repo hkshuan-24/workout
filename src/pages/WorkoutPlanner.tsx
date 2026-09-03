@@ -363,97 +363,155 @@ export default function WorkoutPlanner() {
                     <div style={{ fontSize: '0.8rem' }}>Add exercises to build your workout</div>
                   </div>
                 ) : (
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th style={{width:40}}></th>
-                        <th>Exercise</th>
-                        <th>Weight</th>
-                        <th>Reps</th>
-                        <th>Rest</th>
-                        <th></th>
-                      </tr>
-                    </thead>
-                    <tbody>
+                  <div>
+                    {/* Desktop: table-like layout */}
+                    <div className="desktop-only">
                       {day.exercises.map(ex => (
-                        <tr key={ex.id}>
-                          <td colSpan={6} style={{ padding: 0, border: 'none' }}>
-                            <div style={{ padding: '10px 16px', borderBottom: '1px solid #1e293b' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                                <span style={{ fontWeight: 600, color: '#f1f5f9' }}>{ex.name}</span>
-                                <div style={{ display: 'flex', gap: 6 }}>
-                                  <button
-                                    onClick={() => setShowWarmup(ex.id)}
-                                    className="tag tag-amber"
-                                    style={{ cursor: 'pointer', fontSize: '0.7rem' }}
-                                  >
-                                    <Flame size={10} /> Warmup
-                                  </button>
-                                  <button onClick={() => removeExercise(day.id, ex.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
-                                    <Trash2 size={14}/>
-                                  </button>
-                                </div>
-                              </div>
-                              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                                {Array.from({length: ex.sets}).map((_, i) => {
-                                  const log = ex.setLogs[i] || { weight: 0, reps: 0, completed: false }
-                                  return (
-                                    <div key={i} style={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: 4,
-                                      padding: '6px 8px',
-                                      borderRadius: 8,
-                                      background: log.completed ? 'rgba(16,185,129,0.12)' : '#1e293b',
-                                      border: `1px solid ${log.completed ? '#10b981' : '#334155'}`,
-                                    }}>
-                                      <button
-                                        onClick={() => {
-                                          toggleSet(day.id, ex.id, i)
-                                          if (!log.completed) startTimer(parseRestToSeconds(ex.rest))
-                                        }}
-                                        style={{
-                                          width: 22, height: 22, borderRadius: 5, border: 'none', cursor: 'pointer',
-                                          background: log.completed ? '#10b981' : 'transparent',
-                                          color: log.completed ? '#fff' : '#64748b',
-                                          fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                        }}
-                                      >
-                                        {log.completed ? <Check size={12}/> : i + 1}
-                                      </button>
-                                      <input
-                                        type="number"
-                                        placeholder="lbs"
-                                        value={log.weight || ''}
-                                        onChange={e => updateSetLog(day.id, ex.id, i, 'weight', Number(e.target.value))}
-                                        style={{
-                                          width: 50, padding: '4px 6px', background: 'rgba(15,23,42,0.5)',
-                                          border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
-                                          fontSize: 12, textAlign: 'center'
-                                        }}
-                                      />
-                                      <span style={{ color: '#64748b', fontSize: 11 }}>x</span>
-                                      <input
-                                        type="number"
-                                        placeholder="reps"
-                                        value={log.reps || ''}
-                                        onChange={e => updateSetLog(day.id, ex.id, i, 'reps', Number(e.target.value))}
-                                        style={{
-                                          width: 45, padding: '4px 6px', background: 'rgba(15,23,42,0.5)',
-                                          border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
-                                          fontSize: 12, textAlign: 'center'
-                                        }}
-                                      />
-                                    </div>
-                                  )
-                                })}
-                              </div>
+                        <div key={ex.id} style={{ padding: '10px 16px', borderBottom: '1px solid #1e293b' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                            <span style={{ fontWeight: 600, color: '#f1f5f9' }}>{ex.name}</span>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <button
+                                onClick={() => setShowWarmup(ex.id)}
+                                className="tag tag-amber"
+                                style={{ cursor: 'pointer', fontSize: '0.7rem' }}
+                              >
+                                <Flame size={10} /> Warmup
+                              </button>
+                              <button onClick={() => removeExercise(day.id, ex.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                                <Trash2 size={14}/>
+                              </button>
                             </div>
-                          </td>
-                        </tr>
+                          </div>
+                          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                            {Array.from({length: ex.sets}).map((_, i) => {
+                              const log = ex.setLogs[i] || { weight: 0, reps: 0, completed: false }
+                              return (
+                                <div key={i} style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 4,
+                                  padding: '6px 8px',
+                                  borderRadius: 8,
+                                  background: log.completed ? 'rgba(16,185,129,0.12)' : '#1e293b',
+                                  border: `1px solid ${log.completed ? '#10b981' : '#334155'}`,
+                                }}>
+                                  <button
+                                    onClick={() => {
+                                      toggleSet(day.id, ex.id, i)
+                                      if (!log.completed) startTimer(parseRestToSeconds(ex.rest))
+                                    }}
+                                    style={{
+                                      width: 22, height: 22, borderRadius: 5, border: 'none', cursor: 'pointer',
+                                      background: log.completed ? '#10b981' : 'transparent',
+                                      color: log.completed ? '#fff' : '#64748b',
+                                      fontSize: 10, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}
+                                  >
+                                    {log.completed ? <Check size={12}/> : i + 1}
+                                  </button>
+                                  <input
+                                    type="number"
+                                    placeholder="lbs"
+                                    value={log.weight || ''}
+                                    onChange={e => updateSetLog(day.id, ex.id, i, 'weight', Number(e.target.value))}
+                                    style={{
+                                      width: 50, padding: '4px 6px', background: 'rgba(15,23,42,0.5)',
+                                      border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
+                                      fontSize: 12, textAlign: 'center'
+                                    }}
+                                  />
+                                  <span style={{ color: '#64748b', fontSize: 11 }}>x</span>
+                                  <input
+                                    type="number"
+                                    placeholder="reps"
+                                    value={log.reps || ''}
+                                    onChange={e => updateSetLog(day.id, ex.id, i, 'reps', Number(e.target.value))}
+                                    style={{
+                                      width: 45, padding: '4px 6px', background: 'rgba(15,23,42,0.5)',
+                                      border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
+                                      fontSize: 12, textAlign: 'center'
+                                    }}
+                                  />
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
                       ))}
-                    </tbody>
-                  </table>
+                    </div>
+
+                    {/* Mobile: card layout */}
+                    <div className="mobile-only">
+                      {day.exercises.map(ex => (
+                        <div key={ex.id} className="exercise-card" style={{ marginBottom: 10 }}>
+                          <div className="exercise-card-header">
+                            <span className="exercise-card-name">{ex.name}</span>
+                            <div style={{ display: 'flex', gap: 6 }}>
+                              <button
+                                onClick={() => setShowWarmup(ex.id)}
+                                className="tag tag-amber"
+                                style={{ cursor: 'pointer', fontSize: '0.7rem' }}
+                              >
+                                <Flame size={10} /> Warmup
+                              </button>
+                              <button onClick={() => removeExercise(day.id, ex.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                                <Trash2 size={14}/>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="exercise-card-sets">
+                            {Array.from({length: ex.sets}).map((_, i) => {
+                              const log = ex.setLogs[i] || { weight: 0, reps: 0, completed: false }
+                              return (
+                                <div key={i} className={`set-chip ${log.completed ? 'completed' : ''}`}>
+                                  <button
+                                    onClick={() => {
+                                      toggleSet(day.id, ex.id, i)
+                                      if (!log.completed) startTimer(parseRestToSeconds(ex.rest))
+                                    }}
+                                    style={{
+                                      width: 24, height: 24, borderRadius: 5, border: 'none', cursor: 'pointer',
+                                      background: log.completed ? '#10b981' : 'transparent',
+                                      color: log.completed ? '#fff' : '#64748b',
+                                      fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                    }}
+                                  >
+                                    {log.completed ? <Check size={12}/> : i + 1}
+                                  </button>
+                                  <input
+                                    type="number"
+                                    placeholder="lbs"
+                                    value={log.weight || ''}
+                                    onChange={e => updateSetLog(day.id, ex.id, i, 'weight', Number(e.target.value))}
+                                    className="set-chip-input"
+                                    style={{
+                                      width: 44, padding: '3px 4px', background: 'rgba(15,23,42,0.5)',
+                                      border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
+                                      fontSize: 11, textAlign: 'center'
+                                    }}
+                                  />
+                                  <span style={{ color: '#64748b', fontSize: 10 }}>x</span>
+                                  <input
+                                    type="number"
+                                    placeholder="reps"
+                                    value={log.reps || ''}
+                                    onChange={e => updateSetLog(day.id, ex.id, i, 'reps', Number(e.target.value))}
+                                    className="set-chip-input"
+                                    style={{
+                                      width: 40, padding: '3px 4px', background: 'rgba(15,23,42,0.5)',
+                                      border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
+                                      fontSize: 11, textAlign: 'center'
+                                    }}
+                                  />
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             )}

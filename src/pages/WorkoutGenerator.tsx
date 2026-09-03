@@ -2,7 +2,7 @@ import { useState } from 'react'
 import {
   Sparkles, Dumbbell, Save, Check, ChevronDown, ChevronUp, ArrowRight, RotateCcw,
   Target, Zap, Flame, Shield, Wind, Heart, BicepsFlexed, Clock, Calendar, TrendingUp,
-  Activity, BarChart3, ChevronRight, Award
+  Activity, BarChart3, ChevronRight, Award, Moon, Apple, Droplets
 } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
 
@@ -37,6 +37,13 @@ interface ExpectedResult {
   timeframe: string
 }
 
+interface RecoveryGuidance {
+  sleep: string
+  protein: string
+  calories: string
+  hydration: string
+}
+
 interface WorkoutPlan {
   id: string
   name: string
@@ -47,6 +54,7 @@ interface WorkoutPlan {
   frequencyDays: number
   phases: Phase[]
   expectedResults: ExpectedResult[]
+  recovery: RecoveryGuidance
   days: WorkoutDay[]
 }
 
@@ -71,6 +79,12 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
       { metric: 'Waist Definition', value: 'Visible abs outline', timeframe: '8-10 weeks' },
       { metric: 'Shoulder Width', value: '3D capped look', timeframe: '10-12 weeks' },
     ],
+    recovery: {
+      sleep: '7-8 hours nightly — growth hormone peaks during deep sleep',
+      protein: '1g per lb bodyweight daily — arms and back need amino acid surplus',
+      calories: '+200-300 kcal above maintenance — lean bulk to keep waist tight',
+      hydration: '1 gallon daily — muscle fullness and joint health',
+    },
     days: [
       {
         id: 'd1', name: 'Day 1 — Width & Back',
@@ -140,6 +154,12 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
       { metric: 'Squat', value: '+30-50 lbs', timeframe: '12-16 weeks' },
       { metric: 'Chest/Back Thickness', value: 'Visibly denser', timeframe: '10-12 weeks' },
     ],
+    recovery: {
+      sleep: '8+ hours — muscle grows while you sleep, not in the gym',
+      protein: '1.1g per lb bodyweight — prioritize whole food sources',
+      calories: '+400-500 kcal surplus — scale weight up 0.5-1 lb per week',
+      hydration: '1.5 gallons — creatine and high protein demand more water',
+    },
     days: [
       {
         id: 'd1', name: 'Day 1 — Push (Chest + Delts + Tris)',
@@ -212,6 +232,12 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
       { metric: 'Explosive Power', value: '+15-25% jump/throw', timeframe: '8-10 weeks' },
       { metric: 'Work Capacity', value: 'Shorter rest, same output', timeframe: '6-8 weeks' },
     ],
+    recovery: {
+      sleep: '7-8 hours — recovery is critical with conditioning work',
+      protein: '1g per lb bodyweight — preserve muscle in deficit',
+      calories: '-300-500 kcal deficit — 1-1.5 lbs fat loss per week max',
+      hydration: '1 gallon — metabolic processes need water',
+    },
     days: [
       {
         id: 'd1', name: 'Day 1 — Power & Push',
@@ -273,6 +299,12 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
       { metric: 'Deadlift 1RM', value: '+40-60 lbs', timeframe: '12 weeks' },
       { metric: 'Overhead Press', value: '+15-25 lbs', timeframe: '12 weeks' },
     ],
+    recovery: {
+      sleep: '8+ hours — CNS recovery from heavy lifting demands it',
+      protein: '1g per lb bodyweight — maintain muscle during low-volume phase',
+      calories: 'Maintenance +100-200 — enough to fuel heavy sessions without fat gain',
+      hydration: '1 gallon — joint health under heavy loads',
+    },
     days: [
       {
         id: 'd1', name: 'Day 1 — Squat & Lower',
@@ -330,6 +362,12 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
       { metric: 'Arm Circumference', value: '+0.5-1 inch', timeframe: '8-10 weeks' },
       { metric: 'Vascularity', value: 'Forearm veins visible', timeframe: '6-8 weeks' },
     ],
+    recovery: {
+      sleep: '7-8 hours — arms recover fast but need consistency',
+      protein: '1g per lb bodyweight — arms are small muscles, need frequent protein',
+      calories: '+200-300 surplus — enough to grow without gaining fat',
+      hydration: '1 gallon — pump and vascularity depend on hydration',
+    },
     days: [
       {
         id: 'd1', name: 'Day 1 — Biceps Focus',
@@ -389,6 +427,12 @@ const PRESETS: Omit<WorkoutPlan, 'id'>[] = [
       { metric: 'Shoulder Width', value: 'Broader frame', timeframe: '8-10 weeks' },
       { metric: 'Chest Vascularity', value: 'Striations visible', timeframe: '10+ weeks (low body fat)' },
     ],
+    recovery: {
+      sleep: '7-8 hours — chest and delts need recovery time',
+      protein: '1g per lb bodyweight — upper body muscles are large, need fuel',
+      calories: '+200-400 surplus — enough to build without excess fat',
+      hydration: '1 gallon — muscle pump and recovery',
+    },
     days: [
       {
         id: 'd1', name: 'Day 1 — Chest Mass',
@@ -512,7 +556,7 @@ export default function WorkoutGenerator() {
 
       {/* Search */}
       <div className="section" style={{ padding: 28 }}>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'stretch', flexWrap: 'wrap' }}>
           <input
             type="text"
             value={query}
@@ -521,6 +565,7 @@ export default function WorkoutGenerator() {
             placeholder="e.g. 'V-taper with big arms' or 'bulky mass in 12 weeks'"
             style={{
               flex: 1,
+              minWidth: 200,
               padding: '14px 20px',
               background: 'rgba(15, 23, 42, 0.6)',
               border: '1px solid #334155',
@@ -639,7 +684,7 @@ export default function WorkoutGenerator() {
             <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 20, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
               <BarChart3 size={20} /> Training Timeline
             </h2>
-            <div style={{ display: 'flex', gap: 0, position: 'relative' }}>
+            <div className="phase-timeline" style={{ display: 'flex', gap: 0, position: 'relative' }}>
               {/* Connecting line */}
               <div style={{ position: 'absolute', top: 20, left: '10%', right: '10%', height: 2, background: '#1e293b', zIndex: 0 }} />
               {selectedPlan.phases.map((phase, idx) => {
@@ -649,11 +694,7 @@ export default function WorkoutGenerator() {
                   <div key={idx} style={{ flex: 1, position: 'relative', zIndex: 1 }}>
                     <div
                       onClick={() => setExpandedPhase(isOpen ? null : idx)}
-                      style={{
-                        cursor: 'pointer',
-                        textAlign: 'center',
-                        padding: '0 8px',
-                      }}
+                      style={{ cursor: 'pointer', textAlign: 'center', padding: '0 8px' }}
                     >
                       <div style={{
                         width: 40, height: 40, borderRadius: '50%',
@@ -726,6 +767,34 @@ export default function WorkoutGenerator() {
             </div>
           </div>
 
+          {/* Recovery & Nutrition */}
+          <div className="section">
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 20, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <Heart size={20} color="#ef4444" /> Recovery & Nutrition
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 14 }}>
+              {[
+                { icon: <Moon size={18} color="#8b5cf6" />, label: 'Sleep', text: selectedPlan.recovery.sleep },
+                { icon: <Apple size={18} color="#10b981" />, label: 'Protein', text: selectedPlan.recovery.protein },
+                { icon: <Flame size={18} color="#f59e0b" />, label: 'Calories', text: selectedPlan.recovery.calories },
+                { icon: <Droplets size={18} color="#06b6d4" />, label: 'Hydration', text: selectedPlan.recovery.hydration },
+              ].map((item, i) => (
+                <div key={i} style={{
+                  background: 'rgba(15,23,42,0.5)',
+                  border: '1px solid #1e293b',
+                  borderRadius: 12,
+                  padding: 16,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+                    {item.icon}
+                    <span style={{ color: '#94a3b8', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1 }}>{item.label}</span>
+                  </div>
+                  <div style={{ color: '#e2e8f0', fontSize: '0.9rem', lineHeight: 1.5 }}>{item.text}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Workout Days */}
           <h2 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: 16, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Activity size={20} /> Workout Schedule
@@ -733,10 +802,11 @@ export default function WorkoutGenerator() {
           {selectedPlan.days.map(day => (
             <div key={day.id} className="section" style={{ padding: 0, overflow: 'hidden', marginBottom: 12 }}>
               <div
+                className="day-header"
                 style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', borderBottom: expandedDay === day.id ? '1px solid #1e293b' : 'none' }}
                 onClick={() => setExpandedDay(expandedDay === day.id ? null : day.id)}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
                   <span className="tag tag-blue">{day.name.split(' — ')[0]}</span>
                   <span style={{ color: '#f1f5f9', fontWeight: 600 }}>{day.name.split(' — ')[1]}</span>
                   <span style={{ color: '#64748b', fontSize: '0.8rem' }}>({day.exercises.length} exercises)</span>
@@ -746,28 +816,60 @@ export default function WorkoutGenerator() {
 
               {expandedDay === day.id && (
                 <div style={{ padding: '16px 20px 20px' }}>
-                  <table className="data-table">
-                    <thead>
-                      <tr>
-                        <th>Exercise</th>
-                        <th style={{ width: 70 }}>Sets</th>
-                        <th style={{ width: 80 }}>Reps</th>
-                        <th style={{ width: 90 }}>Rest</th>
-                        <th>Notes</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {day.exercises.map(ex => (
-                        <tr key={ex.id}>
-                          <td style={{ fontWeight: 600 }}>{ex.name}</td>
-                          <td>{ex.sets}</td>
-                          <td>{ex.reps}</td>
-                          <td><span className="tag tag-amber">{ex.rest}</span></td>
-                          <td style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{ex.notes}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  {/* Desktop: table */}
+                  <div className="desktop-only">
+                    <div style={{ overflowX: 'auto' }}>
+                      <table className="data-table">
+                        <thead>
+                          <tr>
+                            <th>Exercise</th>
+                            <th style={{ width: 70 }}>Sets</th>
+                            <th style={{ width: 80 }}>Reps</th>
+                            <th style={{ width: 90 }}>Rest</th>
+                            <th>Notes</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {day.exercises.map(ex => (
+                            <tr key={ex.id}>
+                              <td style={{ fontWeight: 600 }}>{ex.name}</td>
+                              <td>{ex.sets}</td>
+                              <td>{ex.reps}</td>
+                              <td><span className="tag tag-amber">{ex.rest}</span></td>
+                              <td style={{ color: '#94a3b8', fontSize: '0.85rem' }}>{ex.notes}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Mobile: cards */}
+                  <div className="mobile-only">
+                    {day.exercises.map(ex => (
+                      <div key={ex.id} className="exercise-card">
+                        <div className="exercise-card-header">
+                          <span className="exercise-card-name">{ex.name}</span>
+                        </div>
+                        <div className="exercise-card-meta">
+                          <div className="exercise-card-meta-item">
+                            <span className="tag tag-blue">{ex.sets} sets</span>
+                          </div>
+                          <div className="exercise-card-meta-item">
+                            <span className="tag tag-green">{ex.reps}</span>
+                          </div>
+                          <div className="exercise-card-meta-item">
+                            <span className="tag tag-amber">{ex.rest}</span>
+                          </div>
+                        </div>
+                        {ex.notes && (
+                          <div style={{ color: '#94a3b8', fontSize: '0.85rem', lineHeight: 1.5 }}>
+                            {ex.notes}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
