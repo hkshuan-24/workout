@@ -8,17 +8,33 @@ interface WorkoutEntry { date: string; sets: number }
 
 export default function Dashboard() {
   const [weightHistory] = useLocalStorage<WeightEntry[]>('fittrack_weights', [])
-  const [workoutDays] = useLocalStorage<any[]>('fittrack_workout_days_v2', [])
-  const totalWorkouts = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.setLogs?.filter((s: any) => s.completed).length || 0), 0), 0)
-  const totalSets = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.sets || 0), 0), 0)
-  const workoutPct = totalSets > 0 ? Math.round((totalWorkouts / totalSets) * 100) : 0
-  const nextWorkout = workoutDays.find((d: any) => d.exercises.some((e: any) => (e.setLogs?.filter((s: any) => s.completed).length || 0) < (e.sets || 0)))
-  const nextWorkoutName = nextWorkout ? (nextWorkout.name.split(' — ')[1] || nextWorkout.name) : 'All done!'
   const [workoutHistory] = useLocalStorage<WorkoutEntry[]>('fittrack_workouts', [])
+  const [workoutDays] = useLocalStorage<any[]>('fittrack_workout_days_v2', [])
   const [water, setWater] = useLocalStorage('fittrack_water', 0)
   const [macros] = useLocalStorage('fittrack_macros', { calories: 0, protein: 0, carbs: 0, fat: 0 })
   const [macroGoals] = useLocalStorage('fittrack_goals', { calories: 2400, protein: 200, carbs: 280, fat: 75, water: 8 })
   const waterGoal = macroGoals.water
+
+  const totalWorkouts = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.setLogs?.filter((s: any) => s.completed).length || 0), 0), 0)
+  const totalSets = workoutDays.reduce((a: number, d: any) => a + d.exercises.reduce((b: number, e: any) => b + (e.sets || 0), 0), 0)
+  const workoutPct = totalSets > 0 ? Math.round((totalWorkouts / totalSets) * 100) : 0
+
+  let nextWorkoutName = 'All done!'
+  let remainingExercises = 0
+  for (const d of workoutDays) {
+    for (const e of d.exercises || []) {
+      const done = e.setLogs?.filter((s: any) => s.completed).length || 0
+      if (done < (e.sets || 0)) {
+        nextWorkoutName = d.name.split(' — ')[1] || d.name
+        remainingExercises = d.exercises.filter((ex: any) => {
+          const c = ex.setLogs?.filter((s: any) => s.completed).length || 0
+          return c < (ex.sets || 0)
+        }).length
+        break
+      }
+    }
+    if (remainingExercises > 0) break
+  }
 
   const latestWeight = weightHistory.length > 0 ? weightHistory[weightHistory.length - 1].weight : null
   const weightChange = useMemo(() => {
@@ -100,9 +116,7 @@ export default function Dashboard() {
           </div>
           <div className="card-value" style={{ fontSize: '1.2rem', lineHeight: 1.3 }}>{nextWorkoutName}</div>
           <div className="card-change" style={{ color: '#64748b' }}>
-            {nextWorkout
-              ? (nextWorkout.exercises.filter((e: any) => (e.setLogs?.filter((s: any) => s.completed).length || 0) < (e.sets || 0)).length) + ' exercises remaining'
-              : 'Rest day or all complete'
+            {remainingExercises > 0 ? `${remainingExercises} exercises remaining` : 'Rest day or all complete'}
           </div>
         </div>
       </div>
