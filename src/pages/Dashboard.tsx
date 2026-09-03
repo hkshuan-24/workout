@@ -14,6 +14,7 @@ export default function Dashboard() {
   const workoutPct = totalSets > 0 ? Math.round((totalWorkouts / totalSets) * 100) : 0
   const nextWorkout = workoutDays.find((d: any) => d.exercises.some((e: any) => (e.setLogs?.filter((s: any) => s.completed).length || 0) < (e.sets || 0)))
   const nextWorkoutName = nextWorkout ? (nextWorkout.name.split(' — ')[1] || nextWorkout.name) : 'All done!'
+  const [workoutHistory] = useLocalStorage<WorkoutEntry[]>('fittrack_workouts', [])
   const [water, setWater] = useLocalStorage('fittrack_water', 0)
   const [macros] = useLocalStorage('fittrack_macros', { calories: 0, protein: 0, carbs: 0, fat: 0 })
   const [macroGoals] = useLocalStorage('fittrack_goals', { calories: 2400, protein: 200, carbs: 280, fat: 75, water: 8 })
@@ -100,7 +101,7 @@ export default function Dashboard() {
           <div className="card-value" style={{ fontSize: '1.2rem', lineHeight: 1.3 }}>{nextWorkoutName}</div>
           <div className="card-change" style={{ color: '#64748b' }}>
             {nextWorkout
-              ? `${nextWorkout.exercises.filter((e: any) => (e.setLogs?.filter((s: any) => s.completed).length || 0) < (e.sets || 0)).length} exercises remaining`
+              ? (nextWorkout.exercises.filter((e: any) => (e.setLogs?.filter((s: any) => s.completed).length || 0) < (e.sets || 0)).length) + ' exercises remaining'
               : 'Rest day or all complete'
           </div>
         </div>
