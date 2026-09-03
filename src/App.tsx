@@ -1,6 +1,6 @@
 import { Suspense, lazy } from 'react'
 import { HashRouter, Routes, Route, NavLink } from 'react-router-dom'
-import { Dumbbell, Scale, Utensils, Activity, Menu, X, Settings } from 'lucide-react'
+import { Dumbbell, Scale, Utensils, Activity, Menu, X, Settings, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useLocalStorage } from './hooks/useLocalStorage'
 import Welcome from './pages/Welcome'
@@ -10,6 +10,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'))
 const WorkoutPlanner = lazy(() => import('./pages/WorkoutPlanner'))
 const BodyTracker = lazy(() => import('./pages/BodyTracker'))
 const MealPlanner = lazy(() => import('./pages/MealPlanner'))
+const WorkoutGenerator = lazy(() => import('./pages/WorkoutGenerator'))
 const SettingsPage = lazy(() => import('./pages/Settings'))
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +31,9 @@ function AppLayout({ children }: { children: React.ReactNode }) {
           </NavLink>
           <NavLink to="/workouts" onClick={() => setSidebarOpen(false)}>
             <Dumbbell size={18} /> Workouts
+          </NavLink>
+          <NavLink to="/generate" onClick={() => setSidebarOpen(false)}>
+            <Sparkles size={18} /> Generator
           </NavLink>
           <NavLink to="/body" onClick={() => setSidebarOpen(false)}>
             <Scale size={18} /> Body
@@ -67,6 +71,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/workouts" element={<WorkoutPlanner />} />
+            <Route path="/generate" element={<WorkoutGenerator />} />
             <Route path="/body" element={<BodyTracker />} />
             <Route path="/meals" element={<MealPlanner />} />
             <Route path="/settings" element={<SettingsPage />} />
