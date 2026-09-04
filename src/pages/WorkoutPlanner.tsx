@@ -4,6 +4,7 @@ import {
   RotateCcw, Timer, Trophy, Flame, TrendingUp, Volume2, VolumeX
 } from 'lucide-react'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import { useUnits } from '../hooks/useUnits'
 
 interface SetLog {
   weight: number
@@ -136,6 +137,7 @@ export default function WorkoutPlanner() {
   const [reps, setReps] = useState('10-12')
   const [rest, setRest] = useState('90s')
   const { muted, setMuted, playBeep } = useAudio()
+  const { weight: unitWeight } = useUnits()
   const timerEndedRef = useRef(false)
 
   useEffect(() => {
@@ -290,7 +292,7 @@ export default function WorkoutPlanner() {
                 gap: 6,
               }}>
                 <Flame size={14} />
-                {pr.exercise}: {pr.weight} lbs x {pr.reps} reps
+                {pr.exercise}: {unitWeight.displayShort(pr.weight)}{unitWeight.label} x {pr.reps} reps
               </div>
             ))}
           </div>
@@ -412,9 +414,9 @@ export default function WorkoutPlanner() {
                                   </button>
                                   <input
                                     type="number"
-                                    placeholder="lbs"
-                                    value={log.weight || ''}
-                                    onChange={e => updateSetLog(day.id, ex.id, i, 'weight', Number(e.target.value))}
+                                    placeholder={unitWeight.label}
+                                    value={unitWeight.fromStorage(log.weight) || ''}
+                                    onChange={e => updateSetLog(day.id, ex.id, i, 'weight', unitWeight.toStorage(Number(e.target.value)))}
                                     style={{
                                       width: 50, padding: '4px 6px', background: 'rgba(15,23,42,0.5)',
                                       border: '1px solid #334155', borderRadius: 6, color: '#e2e8f0',
@@ -481,9 +483,9 @@ export default function WorkoutPlanner() {
                                   </button>
                                   <input
                                     type="number"
-                                    placeholder="lbs"
-                                    value={log.weight || ''}
-                                    onChange={e => updateSetLog(day.id, ex.id, i, 'weight', Number(e.target.value))}
+                                    placeholder={unitWeight.label}
+                                    value={unitWeight.fromStorage(log.weight) || ''}
+                                    onChange={e => updateSetLog(day.id, ex.id, i, 'weight', unitWeight.toStorage(Number(e.target.value)))}
                                     className="set-chip-input"
                                     style={{
                                       width: 44, padding: '3px 4px', background: 'rgba(15,23,42,0.5)',

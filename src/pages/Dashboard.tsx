@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Activity, Dumbbell, Droplets, Flame, TrendingUp, Scale, Target, Utensils, Clock } from 'lucide-react'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts'
 import { useLocalStorage } from '../hooks/useLocalStorage'
+import StreakCalendar from '../components/StreakCalendar'
 
 interface WeightEntry { date: string; weight: number }
 interface WorkoutEntry { date: string; sets: number }
@@ -48,6 +49,8 @@ export default function Dashboard() {
         <h1>Dashboard</h1>
         <p>Your fitness at a glance — add your data to see progress</p>
       </div>
+
+      <StreakCalendar />
 
       <div className="card-grid">
         <div className="card">
